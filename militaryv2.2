@@ -1,0 +1,393 @@
+local Iris = loadstring(game:HttpGet("https://raw.githubusercontent.com/x0581/Iris-Exploit-Bundle/main/bundle.lua"))().Init(game.CoreGui)
+local selectedPlayer = nil 
+local Player = game.Players.LocalPlayer
+local near = nil 
+local bool = false 
+local exbool = false 
+local hit = game:GetService("ReplicatedStorage")["ACS_Engine"].Modules.Hitmarker.MLGHitmarker
+local hitBool = false 
+local farming = false
+local hardbool = false
+local collecting = false
+local rebirthing = false
+local selectedWeapon = "Pick A Weapon"
+local weaponConfig = nil
+local config = require(game:GetService("ReplicatedStorage")["ACS_Engine"]["GameRules"].Config)
+local tycoons = {}
+local buttons = {}
+local tycoon = nil 
+local localPlrID = game:GetService("Players"):GetUserIdFromNameAsync(Player.Name)
+local HardpointB = game:GetService("Workspace").HardpointB
+local HardpointA = game:GetService("Workspace").HardpointA
+
+function antiAFK() 
+    local vu = game:GetService("VirtualUser")
+    game:GetService("Players").LocalPlayer.Idled:connect(function()
+    vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    wait(1)
+    vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end)
+end 
+
+function findButtons()
+    for i,v in pairs(game.Workspace:GetChildren()) do 
+        if string.gsub(v.Name, "%d+", "") == "Tycoon" then 
+            table.insert(tycoons, v.Name) 
+        end 
+    end 
+    for i,v in pairs(tycoons) do 
+        if game.workspace[v].Params.OwnerId.Value == localPlrID then 
+            return game.workspace[v].BuyButtons
+        end 
+    end 
+end 
+
+function buyHeli() 
+    for i,v in pairs(findButtons().Parent.Helicopters:GetChildren()) do
+        print(v) 
+        game:GetService("ReplicatedStorage").RequestHeliPurchaseEvent:FireServer(tostring(v))
+    end
+end
+
+function buyVehicle() 
+    for i,v in pairs(findButtons().Parent.Vehicles:GetChildren()) do
+        print(v) 
+        game:GetService("ReplicatedStorage").RequestVehiclePurchaseEvent:FireServer(tostring(v))
+    end
+end
+
+function insertButtons()
+    for i,v in pairs(findButtons():GetChildren()) do 
+        if v.Name ~= "[BOUGHT]" then
+            if Player.leaderstats.Money.Value >= v.Cost.Value then 
+                table.insert(buttons, {object = v, Cost = v.Cost.Value})
+            end
+        end 
+    end
+    return table.sort(buttons,sortButtons)
+end 
+
+function sortButtons(a, b) 
+    return (a.Cost < b.Cost)
+end
+
+function rebirth()
+    while rebirthing do 
+        game:GetService("ReplicatedStorage").RequestPrestigeEvent:FireServer()
+        wait(.1)
+    end
+end
+
+function collectCash()
+    while collecting do 
+        game:GetService("ReplicatedStorage").CollectCashEvent:FireServer()
+        wait(.1)
+    end
+end
+
+function autoBuyButton() 
+    game:GetService("ReplicatedStorage").CollectCashEvent:FireServer()
+end
+
+function autoFarm()
+    while farming do
+        insertButtons()
+        for i,v in pairs(buttons) do   
+            if v.object:FindFirstChild("Button") then 
+                game:GetService("ReplicatedStorage").RequestPurchaseEvent:FireServer(v.object.Button)
+                wait(.1)
+            end          
+        end
+        if #buttons == 0 then 
+            buyHeli()
+            buyVehicle()
+        end
+        wait(.1)
+    end 
+end 
+
+function nearestPlayer()
+    local localCharacter = Player.Character.HumanoidRootPart
+    local closestPlayer = 100000
+    local character = nil
+    local playerName = nil
+    local distance = nil  
+
+    for i,v in pairs(game:GetService("Players"):GetChildren()) do
+        if v.Character:FindFirstChild("HumanoidRootPart") then 
+            if v.Name ~= Player.Name then
+                character = v.Character:FindFirstChild("HumanoidRootPart") 
+                distance = (character.Position - localCharacter.Position).Magnitude 
+
+                if distance < closestPlayer then 
+                    closestPlayer = distance
+                    playerName = v.name
+                end
+            end
+        end
+    end 
+    return playerName
+end
+
+local function mute()
+    hitBool = not hitBool 
+    hit.Volume = 1
+
+    if hitBool then 
+        hit.Volume = 0
+    end
+end 
+
+
+    
+local function kill(target) 
+
+    
+        function getNil(name,class) for _,v in next, getnilinstances() do if v.ClassName==class and v.Name==name then return v;end end end
+        local args = {
+                [1] = {
+                    ["shellSpeed"] = 2000,
+                    ["shellMaxDist"] = 7000,
+                    ["origin"] = Vector3.new(803.0066528320312, 35.730960845947266, -1371.3094482421875),
+                    ["weaponName"] = "Knife",
+                    ["shellType"] = "Melee",
+                    ["filterDescendants"] = {
+                        [1] = workspace:WaitForChild(Player.name),
+                        [2] = getNil("Viewmodel", "Model")
+                    }
+                },
+                [2] = game:GetService("Players"):WaitForChild(target).Character.Humanoid,
+                [3] = 729.2696533203125,
+                [4] = 2
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("ACS_Engine"):WaitForChild("Events"):WaitForChild("Damage"):InvokeServer(unpack(args))
+        
+end
+
+function takePoint(point)
+    
+    if not Player.Character:FindFirstChild("HumanoidRootPart") then 
+        wait(7)
+    end
+
+    local orgPosition = Player.Character:WaitForChild("HumanoidRootPart").CFrame
+    while point.OwningPlayer.Value ~= Player.Name do
+    if point == HardpointA then  
+        Player.Character.HumanoidRootPart.CFrame = CFrame.new(-164.866821, 286.284851, 87.027565, 0.78238523, 0.0388467573, 0.621582091, 1.31492639e-08, 0.998052776, -0.0623749048, -0.622794807, 0.0488012098, 0.780861735)
+    end 
+    if point == HardpointB then 
+        Player.Character.HumanoidRootPart.CFrame = CFrame.new(-364.278137, 286.270538, -1107.63281, -0.977989376, 0.0215630494, -0.207537636, 1.30185409e-08, 0.994645774, 0.103343099, 0.208654821, 0.101068452, -0.972752988)
+    end 
+        wait(1)
+        Player.Character.HumanoidRootPart.Anchored = true
+        if point.IsContested.Value == true then 
+            kill(nearestPlayer())
+        end
+
+        wait(.001)
+    end 
+    Player.Character.HumanoidRootPart.Anchored = false
+    Player.Character.HumanoidRootPart.CFrame = orgPosition
+    wait(1)
+end 
+
+local function explode(target) 
+
+            function getNil(name,class) for _,v in next, getnilinstances() do if v.ClassName==class and v.Name==name then return v;end end end
+            local args = {
+                [1] = target,
+                [2] = {
+                    ["shellSpeed"] = 400,
+                    ["shellName"] = "RpgShell",
+                    ["origin"] = Vector3.new(-9999999999999999.9963989257812, 13.607439994812012, 28.56037139892578),
+                    ["weaponName"] = "RPG-7",
+                    ["shellType"] = "Explosive",
+                    ["shellMaxDist"] = 7000,
+                    ["filterDescendants"] = {
+                        [1] = workspace:WaitForChild(Player.name),
+                        [2] = getNil("Viewmodel", "Model")
+                    }
+                }
+            }
+
+            game:GetService("ReplicatedStorage"):WaitForChild("ACS_Engine"):WaitForChild("Events"):WaitForChild("ExplosionFX"):FireServer(unpack(args))
+
+end 
+
+local function killAll() 
+    for i,v in pairs(game.Players:GetChildren()) do 
+        if v.Character then 
+            if v.name ~= Player.name then 
+                kill(v.name)
+            end
+        end
+    end
+end
+
+local function explodeAll() 
+    for i,v in pairs(game.Players:GetChildren()) do 
+        if v.Character then
+            if v.Character:FindFirstChild("Head") then 
+                if v.name ~= Player.name then 
+                    explode(v.Character.LeftFoot.Position)
+                end
+            end
+        end 
+    end 
+end
+
+Iris:Connect(function()
+    Iris.Window({"Admin Console v2.2 by CODAK"}, {size = Vector2.new(550,400)})
+    Iris.Tree({"Commands"})
+    local input = Iris.InputText({"enter name"}) 
+
+    Iris.SameLine()
+    if Iris.Button({"Kill Player"}).clicked then
+        selectedPlayer = input.text.value 
+        kill(selectedPlayer)
+    end
+    if Iris.Button({"Loopkill player"}).clicked then 
+        selectedPlayer = input.text.value 
+        bool = not bool
+        while bool do 
+            kill(selectedPlayer)
+        end
+    end
+    if Iris.Button({"Explode Player"}).clicked then 
+        selectedPlayer = input.text.value
+        explode(game.Players[selectedPlayer].Character.LeftFoot.Position)
+    end
+    if Iris.Button({"Loop Explode Player"}).clicked then
+        selectedPlayer = input.text.value 
+        exbool = not exbool 
+        while exbool do 
+            explode(game.Players[selectedPlayer].Character.LeftFoot.Position)
+            wait(.01)
+        end
+    end 
+    Iris.End()
+    Iris.SameLine()
+    if Iris.Button({"Kill All"}).clicked then
+        mute() 
+        killAll()
+        mute()
+    end
+        if Iris.Button({"loopkill All"}).clicked then 
+            bool = not bool
+            mute()
+            while bool do 
+                killAll()
+            end
+        end
+
+        if Iris.Button({"Explode All"}).clicked then 
+            mute()
+            explodeAll()
+            mute()
+        end
+        if Iris.Button({"Loop Explode All "}).clicked then 
+            mute()
+            boolex = not boolex 
+            while boolex do 
+                wait(.01)
+                explodeAll() 
+            end 
+        end
+    Iris.End()
+
+    if Iris.Button({"INFINITE YIELD CMDS"}).clicked then 
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+    end
+
+    Iris.End()
+    Iris.Tree({"Guns"})
+    Iris.SameLine()
+    for i,v in pairs(Player.Backpack:GetChildren()) do
+        if v.Name ~= "Knife" then 
+            if Iris.Button({v.Name}).clicked then 
+                selectedWeapon = v.Name 
+            end
+        end 
+    end 
+    Iris.End()
+    Iris.Text({selectedWeapon})
+    if Iris.Button({"Mod Gun"}).clicked then 
+        weaponConfig = require(Player.Backpack[selectedWeapon]["ACS_Settings"])
+        weaponConfig.Ammo = math.huge
+        weaponConfig.StoredAmmo = math.huge
+        weaponConfig.AmmoInGun = math.huge
+        weaponConfig.MaxStoredAmmo = math.huge
+        weaponConfig.ShootRate = 1500
+        weaponConfig.Bullets = 3
+        weaponConfig.ShootType = 3
+        weaponConfig.MinSpread = 10
+        weaponConfig.MaxSpread = 10
+        weaponConfig.ChangeFiremode = true
+        weaponConfig.Semi = true
+        weaponConfig.Burst = true
+        weaponConfig.Auto = true
+        weaponConfig.camRecoilUp = {0, 0}
+        weaponConfig.camRecoilTilt = {0, 0}
+        weaponConfig.camRecoilLeft = {0, 0}
+        weaponConfig.camRecoilRight = {0, 0}
+        weaponConfig.camRecoil = 0
+        weaponConfig.gunRecoilUp = {0, 0}
+        weaponConfig.gunRecoilTilt = {0, 0}
+        weaponConfig.gunRecoilLeft = {0, 0}
+        weaponConfig.gunRecoilRight = {0, 0}
+        weaponConfig.AimInaccuracyStepAmount = math.huge
+        weaponConfig.AimInaccuracyDecrease = 0
+        weaponConfig.WalkMult = 0
+        weaponConfig.MuzzleVelocity = 10000
+        
+        return
+    end 
+    Iris.End()
+    Iris.Tree({"Movement"})
+    local walkspeed = Iris.InputNum({"walkspeed"},{number = config.NormalWalkSpeed})
+    local jumpPower = Iris.InputNum({"jump power"},{number = config.JumpPower})
+    config.NormalWalkSpeed = walkspeed.number.value
+    config.JumpPower = jumpPower.number.value
+
+    if Iris.Button({"Reset walkspeed"}).clicked then 
+        walkspeed.number.value = 16
+    end 
+    if Iris.Button({"Reset JumpPower"}).clicked then 
+        jumpPower.number.value = 19
+    end 
+    Iris.End() 
+    Iris.Tree({"Auto Farming"})
+
+    if Iris.Button({"Auto Collect Money"}).clicked then
+        collecting = not collecting
+        collectCash()
+    end
+
+    if Iris.Button({"Auto Buy Buttons"}).clicked then
+        farming = not farming 
+        autoFarm()
+    end
+
+    if Iris.Button({"Auto rebirth"}).clicked then
+        rebirthing = not rebirthing 
+        rebirth()
+    end
+
+    if Iris.Button({"Auto Control Points"}).clicked then
+        hardbool = not hardbool
+        while hardbool do 
+            takePoint(HardpointB)
+            takePoint(HardpointA)
+            antiAFK()
+        end
+    end
+    
+    Iris.Text({"Auto Collecting Cash: " .. tostring(collecting)})
+    Iris.Text({"Auto Buying Buttons: " .. tostring(farming)})
+    Iris.Text({"Auto Prestige: " .. tostring(rebirthing)})
+    Iris.Text({"Auto Control Points: " .. tostring(hardbool)})
+    
+    Iris.End()
+    Iris.End()
+
+end)
